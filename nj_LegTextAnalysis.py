@@ -6,6 +6,18 @@ sys.setdefaultencoding('Cp1252')
 
 from bs4 import BeautifulSoup as BS
 import urllib
+
+import nltk
+from nltk import word_tokenize
+from nltk.tokenize import sent_tokenize
+import nltk.collocations
+from nltk.corpus import stopwords
+
+from collections import Counter
+
+import re
+
+
 input = raw_input("Enter URL: ")
 r = urllib.urlopen(input).read()
 # create a soup that
@@ -18,25 +30,26 @@ def space():
 	print
 	print
 
-import nltk
-from nltk import word_tokenize
-import nltk.collocations
+
 body_tokens = nltk.word_tokenize(soup)
+#body_tokens = str(body_tokens)
 body_text = nltk.Text(body_tokens)
 body_text.collocations(num=50)
 
 
 
 # finding the 20 most common words
-from nltk.corpus import stopwords
+
 stopwords = nltk.corpus.stopwords.words('english')
 common_text = [w for w in body_text if w.lower() not in stopwords]
-from collections import Counter
-import re
-common_search = re.findall('\w+', str(common_text))
+common_text = str(common_text)
+
+common_search = re.findall('\w+', common_text.lower())
 most_common = Counter(common_search).most_common(20)
 print "build"
-print most_common
+common_list = [w for w in most_common]
+for i in common_list:
+    print i
 
 
 # allows you to search concordance of individual words
@@ -44,44 +57,40 @@ def leg_concordance():
 	"""find concordance of input search term"""
 	while True:
 		search = raw_input("Enter search term: ")
-		if search == "Done":
-			break
+		if search == "Done": break
+
 		else:
 			body_text.concordance(search)
 			space()
 
-
 # see how a term or phrase occurs within a larger context
-from nltk.tokenize import sent_tokenize
+
 soupSents = sent_tokenize(soup)
 soupText = nltk.Text(soupSents)
 def wordSearch():
-	"""returns a context for word or phrase within the input text"""
-	while True:
-		search = raw_input("Enter word or phrase to locate: ")
-		if search == "Done":
-			break
-		else:
-			word_find = [w for w in soupText if search in w]
-			for line in word_find:
-				print line
-				space()
+    """Returns sentences search target appears in"""
+    while True:
+        search = raw_input("Enter word or phrase to locate within the text: ")
+        if search == "Done":
+            print "Return to concordance search or exit? y to return; e to exit."
+            answer = raw_input("> ")
+            if answer == "y":
+                return leg_concordance()
+            else: break
+        else:
+            word_find = [w for w in soupText if search in w]
+            for line in word_find:
+                print line
+                space()
+    space()
+    print "End of search results for '{}'.".format(search)
+    print "________________________________________________"
 
-# legislative grammatical counts and their implications
-# redo using list comprehnsion
-# redo using a function, then construct as an object to be called
-# take len of text, counts of each grammatical component and graph them (pyplot)
-terms = ['shall', 'shall not', 'may', 'may not', 'must']
-#def term_count():
-#    for term in terms:
-#        print terms.count(term), term
 
 shall_count = body_text.count('shall')
 must_count = body_text.count('must')
 may_count = body_text.count('may')
-# 'term not' requires regex
-#shallNot_count = body_text.count('shall not')
-#mayNot_count = body_text.count('may not')
+
 space()
 
 print "'shall' occurs {} times in this bill.".format(shall_count)
@@ -93,17 +102,10 @@ space()
 print "'may' occurs {} times in this bill.".format(may_count)
 print "Using 'may' can express capability or possibility as well as authoirty."
 space()
-#print "'shall not' occurs {} times in this bill.".format(shallNot_count)
-#print """'shall not' when direct-
-#    ing that an action not be taken. Arguably a distinction exists that "shall not" speaks to
-#    the person subject to the prohibition and is silent as to whether an act done by a person
-#    in violation of the prohibition is nevertheless valid (particularly as to a third party)."""
-#space()
-#print "'may not' occurs {} times in this bill.".format(mayNot_count)
-#print "'may not' when denying a right, privilege, or power, and for placing prohibitions"
+
 
 # beginning part
 print "Lets do some basic search of this text!"
 leg_concordance()
 wordSearch()
-#term_count()
+
